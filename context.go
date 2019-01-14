@@ -8,7 +8,6 @@ import (
 	"image/png"
 	"io"
 	"math"
-	"fmt"
 
 	"github.com/golang/freetype/raster"
 	"golang.org/x/image/draw"
