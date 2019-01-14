@@ -8,6 +8,7 @@ import (
 	"image/png"
 	"io"
 	"math"
+	"fmt"
 
 	"github.com/golang/freetype/raster"
 	"golang.org/x/image/draw"
@@ -143,6 +144,12 @@ func (dc *Context) SetDash(dashes ...float64) {
 
 func (dc *Context) SetLineWidth(lineWidth float64) {
 	dc.lineWidth = lineWidth
+}
+
+// GetLineWidth returns the line width of the context.
+// TODO(gunnsth): Apply transformation matrix to line width.
+func (dc *Context) GetLineWidth() float64 {
+	return dc.lineWidth
 }
 
 func (dc *Context) SetLineCap(lineCap LineCap) {
@@ -764,6 +771,11 @@ func (dc *Context) WordWrap(s string, w float64) []string {
 
 // Transformation Matrix Operations
 
+// ConcatMatrix modifies the current matrix by concatenating with `m`.
+func (dc *Context) ConcatMatrix(m Matrix) {
+	dc.matrix = m.Multiply(dc.matrix)
+}
+
 // Identity resets the current transformation matrix to the identity matrix.
 // This results in no translating, scaling, rotating, or shearing.
 func (dc *Context) Identity() {
@@ -845,7 +857,11 @@ func (dc *Context) Pop() {
 	s := dc.stack
 	x, s := s[len(s)-1], s[:len(s)-1]
 	*dc = *x
-	dc.mask = before.mask
+
+	// TODO (gunnsth): The fields of the context state that are pushed/popped should be customizable.
+	// Could be done through a custom hook with a function that is replaced.
+	// Currently for PDF rendering, the clipping mask is part of the context state.
+	// dc.mask = before.mask
 	dc.strokePath = before.strokePath
 	dc.fillPath = before.fillPath
 	dc.start = before.start
